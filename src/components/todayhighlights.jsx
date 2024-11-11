@@ -57,7 +57,10 @@ const TodayHighlights = ({ weatherData, airQualityData }) => {
       <div style={styles.row}>
         <div style={styles.leftCard}>
           <div style={styles.cardHeader}>
-            <p>Air Quality Index</p>
+            <div style={styles.titleIconContainer}>
+              <p style={styles.headerTitle}>Air Quality Index</p>
+              <AirIcon style={styles.icon} />
+            </div>
             <div
               style={{
                 ...styles.airQualityStatus,
@@ -68,7 +71,6 @@ const TodayHighlights = ({ weatherData, airQualityData }) => {
             </div>
           </div>
           <div style={styles.airQualityDetails}>
-            <AirIcon style={styles.icon} />
             <div style={styles.grid}>
               <div>
                 <p style={styles.bold}>CO</p>
@@ -89,10 +91,10 @@ const TodayHighlights = ({ weatherData, airQualityData }) => {
             </div>
           </div>
         </div>
-
+  
         <div style={styles.rightCard}>
           <div style={styles.cardHeader}>
-            <p>Sunrise and Sunset</p>
+            <p style={styles.headerTitle}>Sunrise and Sunset</p>
             <div style={styles.sunTimeContainer}>
               <div style={styles.timeContainer}>
                 <WbSunnyIcon style={styles.sunIcon} />
@@ -106,7 +108,7 @@ const TodayHighlights = ({ weatherData, airQualityData }) => {
           </div>
         </div>
       </div>
-
+  
       <div style={styles.highlightsContainer}>
         {highlights.map((highlight, index) => (
           <HighlightBox
@@ -119,49 +121,72 @@ const TodayHighlights = ({ weatherData, airQualityData }) => {
       </div>
     </div>
   );
-};
+};  
 
 const styles = {
   container: {
     backgroundColor: "#89ABE3FF",
-    color: "black",
-    width: "90%",
+    color: "white",
+    width: "70%",
     borderRadius: "0.5rem",
     padding: "20px",
-    margin: "auto",
     maxWidth: "100%",
+    paddingTop: "20px",  // Add some padding to the top to ensure it doesn't touch the navbar
   },
-  title: { fontSize: "20px", fontWeight: "bold" },
-  row: { display: "flex", gap: "18px", paddingTop:"10px" },
+  title: { fontSize: "30px", fontWeight: "bold" },
+  row: {
+    display: "flex",
+    gap: "18px",
+    paddingTop: "20px",
+    flex: 1,  // Make sure the row uses the available space
+  },
   leftCard: {
-    backgroundColor: "#FCF6F5FF",
-    padding: "1rem",
+    backgroundColor: "#98989c",
+    padding: "2rem",
     borderRadius: "0.5rem",
-    width: "370px",
+    width: "100%", // Makes the card responsive and adjusts based on available space
+    maxWidth: "700px", // Set a maximum width to keep it manageable
   },
   rightCard: {
-    backgroundColor: "#FCF6F5FF",
-    padding: "1rem",
+    backgroundColor: "#98989c",
+    padding: "2rem",
     borderRadius: "0.5rem",
-    width: "385px",
+    width: "100%",
+    maxWidth: "700px",
+  },
+  headerTitle: {
+    fontSize: "22px",
+    fontWeight: "600",
+    marginBottom: "8px",
+  },
+  titleIconContainer: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   airQualityStatus: {
-    fontSize: "16px",
+    fontSize: "30px",
     fontWeight: "700",
-    height: "20px",
-    width: "70px",
-    borderRadius: "6px",
+    height: "30px",
+    width: "100px",
+    borderRadius: "8px",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
   },
   airQualityDetails: { display: "flex", flexDirection: "column" },
-  grid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "10px" },
-  sunTimeContainer: { display: "flex", justifyContent: "space-between", padding: "10px" },
-  timeContainer: { display: "flex", alignItems: "center" },
-  sunIcon: { fontSize: "40px" },
-  time: { fontSize: "25px" },
-  highlightsContainer: { display: "flex", gap: "4px", marginTop: "10px" },
+  grid: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "20px" },
+  sunTimeContainer: { display: "flex", justifyContent: "space-between", padding: "20px" },
+  timeContainer: { display: "flex", alignItems: "center", gap: "10px", },
+  sunIcon: { fontSize: "50px" },
+  time: { fontSize: "40px" },
+  highlightsContainer: { 
+    display: "flex", 
+    gap: "20px", 
+    marginTop: "5px",
+    overflowX: "auto",
+    flexWrap: "wrap", // Allow items to wrap when space is tight
+  },
   bold: { fontWeight: "bold" },
 };
 

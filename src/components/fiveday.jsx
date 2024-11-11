@@ -9,11 +9,12 @@ const FiveDayForecast = ({ forecastData }) => {
   // Function to format the date into a user-friendly format
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat("en-GB", {
+    return new Intl.DateTimeFormat(navigator.language, {
       day: "2-digit",
       month: "short",
     }).format(date);
   };
+  
 
   // Function to group data by day (first data point per day)
   const getDailyForecasts = () => {
@@ -60,7 +61,7 @@ const FiveDayForecast = ({ forecastData }) => {
           }}
         >
           <div style={{ fontSize: "30px", fontWeight: "bold" }}>
-            {Math.round(item.main.temp)}° {/* Removed Celsius part, just the degree symbol */}
+            {Math.round(item.main.temp)}° 
           </div>
           {/* Optional: Display weather icon */}
           {item.weather && item.weather[0]?.icon && (

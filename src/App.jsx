@@ -4,158 +4,176 @@ import MainWeatherCard from "../src/components/mainweathercard";
 import FiveDayForecast from "../src/components/fiveday";
 import TodayHighlights from "../src/components/todayhighlights";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // WeatherDashboard component
 const WeatherDashboard = () => {
-  // Helper function to convert temperature units
-const convertTemperature = (temp, unit) => {
-  if (unit === 'imperial') {
-    return (temp * 9/5) + 32;  // Convert Celsius to Fahrenheit
-  }
-  return temp;  // If it's metric, return Celsius as is
-};
-
   const [weatherData, setWeatherData] = useState(null);
-  const [city, setCity] = useState('Vancouver'); // Default city is set to Vancouver
+  const [city, setCity] = useState("Vancouver");
   const [airQualityData, setAirQualityData] = useState(null);
   const [fiveDayForecast, setFiveDayForecast] = useState(null);
-  const [loading, setLoading] = useState(false); // Added loading state for better UX
-  const [error, setError] = useState(null); // Added error state to handle errors gracefully
-  const [unit, setUnit] = useState('metric'); // Default to Celsius (metric)
-  const [cityTime, setCityTime] = useState(null); // Current city time state
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [unit, setUnit] = useState("metric");
+  const [cityTime, setCityTime] = useState(null);
 
-  // Function to toggle the unit between metric (Celsius) and imperial (Fahrenheit)
-  const toggleUnit = () => {
-    setUnit((prevUnit) => (prevUnit === 'metric' ? 'imperial' : 'metric'));
+  // Function to show a toast notification
+  const showToast = (message) => {
+    toast.info(message, {
+      position: "top-center",
+      autoClose: 3000, // 3 seconds
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: false,
+    });
   };
 
-  // Fetch the weather data whenever the city changes
+  // Function to toggle temperature unit
+  const toggleUnit = () => {
+    setUnit((prevUnit) => (prevUnit === "metric" ? "imperial" : "metric"));
+    showToast(`Switched to ${unit === "metric" ? "Fahrenheit" : "Celsius"}`);
+  };
+
+  // Fetch data when city or unit changes
   useEffect(() => {
     if (city) {
-      fetchWeatherData(city);
-      fetchCityTime(city); // Fetch city time
+      fetchWeatherAndForecastData(city);
+      fetchCityTime(city);
     }
-  }, [city, unit]); // Fetch data on city or unit change
+  }, [city, unit]);
 
-  // Fetch the current city time (using a timezone API)
+  // Fetch city time using timezone API
   const fetchCityTime = (city) => {
-    const API_KEY = 'K8EH7KOFAWV1'; // Replace with a valid API key
-    axios.get(`https://api.timezonedb.com/v2.1/get-time-zone?key=${API_KEY}&format=json&by=city&city=${city}`)
-      .then(response => {
-        const time = response.data.formatted;
-        setCityTime(time);
-      })
-      .catch(error => {
-        console.error('Error fetching the city time:', error);
+    const API_KEY = import.meta.env.VITE_TIME_API_KEY;
+    axios
+      .get(`https://api.timezonedb.com/v2.1/get-time-zone?key=${API_KEY}&format=json&by=city&city=${city}`)
+      .then((response) => setCityTime(response.data.formatted))
+      .catch((error) => {
+        console.error("Error fetching city time:", error);
         setCityTime("Time not available");
       });
   };
 
-  // Function to fetch air quality data
-  const fetchAirQualityData = (lat, lon) => {
-    const API_KEY = '1d46fcb23caf7334c7ef0c95034f4dbf'; // Replace with your OpenWeatherMap API key
-    axios.get(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`)
-      .then(response => {
-        setAirQualityData(response.data.list[0]); // Set air quality data
-      })
-      .catch(error => {
-        console.error('Error fetching the air quality data:', error);
-        setError("Error fetching air quality data");
-      });
-  };
-
-  // Function to fetch the weather data
-  const fetchWeatherData = (city) => {
-    setLoading(true); // Set loading to true when fetching data
-    setError(null); // Reset error state before new request
-    const API_KEY = '1d46fcb23caf7334c7ef0c95034f4dbf'; // Replace with your OpenWeatherMap API key
-    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${unit}&appid=${API_KEY}`)
-      .then(response => response.json())
-      .then(data => {
-        setWeatherData(data); // Set weather data
-        fetchAirQualityData(data.coord.lat, data.coord.lon); // Fetch air quality data using coordinates from weather data
-        axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=${unit}&appid=${API_KEY}`)
-          .then(response => {
-            setFiveDayForecast(response.data); // Set 5-day forecast data
-            setLoading(false); // Set loading to false after data is fetched
-          })
-          .catch(error => {
-            console.error('Error fetching the 5-day forecast data:', error);
-            setError("Error fetching forecast data");
-            setLoading(false); // Set loading to false if error occurs
-          });
-      })
-      .catch(error => {
-        console.error('Error fetching the weather data:', error);
-        setError("Error fetching weather data");
-        setLoading(false); // Set loading to false if error occurs
-      });
-  };
-
-  // Function to handle search input (change city)
+  // Function to handle user search
   const handleSearch = (searchedCity) => {
-    setCity(searchedCity); // Update city state based on user search
+    setCity(searchedCity);
+    showToast(`Searching weather for ${searchedCity}`);
   };
 
   // Function to handle current location button click
   const handleCurrentLocationClick = () => {
     if (navigator.geolocation) {
+      showToast("Fetching current location...");
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          fetchWeatherDataForCoords(latitude, longitude);
-        },
+        ({ coords: { latitude, longitude } }) => fetchWeatherDataForCoords(latitude, longitude),
         (error) => {
-          console.error("Error getting geolocation:", error);
-          alert("Unable to fetch current location. Please try again.");
+          console.error("Geolocation error:", error);
+          showToast("Unable to fetch current location.");
         }
       );
     } else {
-      alert("Geolocation is not supported by this browser.");
+      showToast("Geolocation is not supported by this browser.");
     }
   };
 
-  // Fetch weather for current location using coordinates
-  const fetchWeatherDataForCoords = (lat, lon) => {
+  // Fetch weather, air quality, and forecast data
+  const fetchWeatherAndForecastData = async (city) => {
     setLoading(true);
-    const API_KEY = '1d46fcb23caf7334c7ef0c95034f4dbf'; // Replace with your OpenWeatherMap API key
-    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=${unit}&appid=${API_KEY}`)
-      .then(response => response.json())
-      .then(data => {
-        setWeatherData(data);
-        fetchAirQualityData(data.coord.lat, data.coord.lon);
-      })
-      .catch(error => {
-        console.error('Error fetching current location weather data:', error);
-        setError("Error fetching current location data");
-      })
-      .finally(() => setLoading(false));
+    setError(null);
+    const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
+
+    try {
+      const [weatherRes, forecastRes] = await Promise.all([
+        axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${unit}&appid=${API_KEY}`),
+        axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=${unit}&appid=${API_KEY}`)
+      ]);
+
+      const { lat, lon } = weatherRes.data.coord;
+      const airQualityRes = await axios.get(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`);
+
+      setWeatherData(weatherRes.data);
+      setFiveDayForecast(forecastRes.data);
+      setAirQualityData(airQualityRes.data.list[0]);
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+      setError("Failed to fetch weather data. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch weather data using coordinates
+  const fetchWeatherDataForCoords = async (lat, lon) => {
+    setLoading(true);
+    const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
+
+    try {
+      const [weatherRes, forecastRes] = await Promise.all([
+        axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=${unit}&appid=${API_KEY}`),
+        axios.get(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=${unit}&appid=${API_KEY}`)
+      ]);
+
+      const airQualityRes = await axios.get(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`);
+
+      setWeatherData(weatherRes.data);
+      setFiveDayForecast(forecastRes.data);
+      setAirQualityData(airQualityRes.data.list[0]);
+    } catch (error) {
+      console.error("Error fetching data for current location:", error);
+      setError("Failed to fetch current location weather data.");
+      showToast("Error fetching current location data.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div style={{ backgroundColor: "#ecf0f1", color: "black" }}> 
-      <Navbar
-        onSearch={handleSearch}
-        toggleUnit={toggleUnit}
-        onCurrentLocation={handleCurrentLocationClick}
-        unit={unit}
-      />
-      {loading && <p>Loading...</p>} {/* Display loading message */}
-      {error && <p style={{ color: 'red' }}>{error}</p>} {/* Display error message if there's an error */}
+    <div style={{
+      backgroundColor: "#ecf0f1",
+      color: "black",
+      display: "flex",
+      flexDirection: "column",
+      height: "100vh", // Full height of the screen
+      padding: "0",
+      overflow: "hidden",
+    }}>
+      <Navbar onSearch={handleSearch} toggleUnit={toggleUnit} onCurrentLocation={handleCurrentLocationClick} unit={unit} />
+      <ToastContainer />
+      
+      {loading && <div className="spinner">Loading...</div>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+  
       {weatherData && airQualityData && (
-        <div style={{ display: "flex", padding: "30px", gap: "20px" }}>
-          <div style={{ flex: "1", marginRight: "10px" }}>
+        <div style={{
+          display: "flex",
+          flexDirection: "column", // Stack content vertically
+          padding: "0 30px",
+          gap: "20px",
+          flex: "1", // Let the container take full available height
+          justifyContent: "flex-start", // Align items at the top, making the height even
+          paddingTop: "10px",
+        }}>
+          {/* Container for MainWeatherCard and TodayHighlights side by side */}
+          <div style={{
+            display: "flex",
+            flex: "1",
+            gap: "20px",
+            justifyContent: "space-between",
+            alignItems: "flex-start", // Ensures equal height between the cards
+          }}>
             <MainWeatherCard weatherData={weatherData} unit={unit} />
-            <p style={{ fontWeight: "700", fontSize: "20px", marginTop: "20px" }}>5 Days Forecast</p>
-            {fiveDayForecast && <FiveDayForecast forecastData={fiveDayForecast} />}
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", flex: "0.5", gap: "20px" }}>
             <TodayHighlights weatherData={weatherData} airQualityData={airQualityData} />
           </div>
+  
+          {/* 5-day forecast at the bottom */}
+          {fiveDayForecast && <FiveDayForecast forecastData={fiveDayForecast} />}
         </div>
       )}
     </div>
   );
+  
 };
 
 export default WeatherDashboard;

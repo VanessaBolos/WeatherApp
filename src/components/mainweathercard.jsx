@@ -19,6 +19,7 @@ const MainWeatherCard = ({ weatherData, unit }) => {
   const cityName = weatherData?.name || "City not available";
   const countryName = weatherData?.sys?.country || "Country not available";
   const timestamp = weatherData?.dt || null;
+  const iconCode = weatherData?.weather?.[0]?.icon || null; // Icon code from weather API
 
   // Convert Fahrenheit to Celsius
   const convertToCelsius = (tempFahrenheit) => {
@@ -36,10 +37,7 @@ const MainWeatherCard = ({ weatherData, unit }) => {
       let newTemperature;
 
       if (unit === "imperial") {
-        // If the unit is imperial, the API gives us Fahrenheit (or it could be Kelvin, depending on how the API is set up)
-        // Here, we're assuming the temperature is in Fahrenheit based on `imperial`
         if (weatherData?.main?.temp_min) {
-          // Check if the API provides temperature in Kelvin, if so, convert to Fahrenheit
           if (weatherData.main.temp === temperatureFromAPI) {
             newTemperature = temperatureFromAPI; // It's already in Fahrenheit, so no need to convert.
           } else {
@@ -47,7 +45,6 @@ const MainWeatherCard = ({ weatherData, unit }) => {
           }
         }
       } else if (unit === "metric") {
-        // If the unit is metric, the API provides the temperature in Celsius
         newTemperature = temperatureFromAPI; // It's already in Celsius, so no need to convert.
       }
 
@@ -104,10 +101,10 @@ const MainWeatherCard = ({ weatherData, unit }) => {
     if (temperature !== null) {
       if (temperature > 23) {
         return <WbSunnyIcon style={{ fontSize: '3rem', color: 'orange' }} />;
-      } else if (temperature < 10) {
+      } else if (temperature < 5) {
         return <AcUnitIcon style={{ fontSize: '3rem', color: 'white' }} />;
       } else {
-        return <CloudIcon style={{ fontSize: '3rem', color: 'gray' }} />;
+        return <CloudIcon style={{ fontSize: '3rem', color: 'white' }} />;
       }
     }
     return null;
@@ -121,38 +118,57 @@ const MainWeatherCard = ({ weatherData, unit }) => {
       width: '100%',
       maxWidth: '400px',
       padding: '20px',
+      height: '550px',
       boxSizing:'border-box' }}>
-      <div style={{ fontSize: '20px', fontWeight: 'bold' }}>Now</div>
+      
+      <div style={{ fontSize: '30px', fontWeight: 'bold' }}>Now</div>
+      
       <div style={{ 
         display: 'flex', 
         alignItems: 'center', 
-        fontSize: '35px', 
+        fontSize: '50px', 
         fontWeight: 'bold',
-        justifyContent: 'space-between'
-        }}>
-        {renderTemperature()} {/* Render temperature */}
-        {renderTemperatureIcon()} {/* Render appropriate weather icon */}
+        justifyContent: 'space-between' }}>
+        
+        {renderTemperature()} {/* Render temperature */}        
+        {renderTemperatureIcon()} {/* Render appropriate temperature icon */}
+        
       </div>
-      <div style={{ fontSize: '15px', marginTop: '8px', fontWeight: '500' }}>
+      {iconCode && (
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+          <img
+            src={`http://openweathermap.org/img/wn/${iconCode}@4x.png`}
+            alt={weatherDescription}
+            style={{ width: '200px', height: '200px' }} // Make the icon large
+          />
+        </div>
+      )}
+      <div style={{ fontSize: '20px', marginTop: '8px', fontWeight: '500' }}>
         {weatherDescription !== "N/A" ? weatherDescription : "Description not available"}
       </div>
+      
       <div style={{ marginTop: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <CalendarMonthIcon />
-          <span style={{ marginLeft: '5px' }}>{currentDate}</span>
+          <span style={{ marginLeft: '10px' }}>{currentDate}</span>
         </div>
-        <div style={{ marginTop: '4px', display: 'flex', alignItems: 'center' }}>
+        
+        <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center' }}>
           <LocationOnIcon />
           <span style={{ marginLeft: '5px' }}>
             {cityName}, {countryName}
           </span>
         </div>
-        <div style={{ marginTop: '4px', display: 'flex', alignItems: 'center' }}>
-          <span style={{ marginLeft: '5px', fontSize: '14px', fontStyle: 'italic' }}>
+        
+        <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center' }}>
+          <span style={{ marginLeft: '5px', fontSize: '25px', fontStyle: 'italic' }}>
             {timezone ? `Current Time (${timezone}):` : "Loading Time..."} {cityTime || "Loading..."}
           </span>
         </div>
       </div>
+
+      {/* Weather icon at the bottom of the card */}
+      
     </div>
   );
 };

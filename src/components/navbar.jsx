@@ -7,20 +7,25 @@ import FilterDramaTwoToneIcon from "@mui/icons-material/FilterDramaTwoTone";
 import GpsFixedIcon from "@mui/icons-material/GpsFixed";
 import DeviceThermostatIcon from '@mui/icons-material/DeviceThermostat';
 
+
 const Navbar = ({ onSearch, toggleUnit, onCurrentLocation, unit }) => {
   const [searchedCity, setSearchedCity] = useState("");
 
+  // Handle input change
   const handleSearchInputChange = (e) => {
     setSearchedCity(e.target.value);
   };
 
+  // Handle search submission
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchedCity.trim() !== "") {
-      onSearch(searchedCity);
+      onSearch(searchedCity.trim());
+      setSearchedCity(""); // Clear the input after searching
     }
   };
 
+  // Handle Enter key press for search
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       handleSearchSubmit(e);
@@ -36,7 +41,7 @@ const Navbar = ({ onSearch, toggleUnit, onCurrentLocation, unit }) => {
         padding: "10px 30px",
         backgroundColor: "#f7f7f7",
         boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-        flexWrap: "wrap"
+        flexWrap: "wrap",
       }}
     >
       {/* Logo Section */}
@@ -48,14 +53,16 @@ const Navbar = ({ onSearch, toggleUnit, onCurrentLocation, unit }) => {
       </div>
 
       {/* Search Input and Button */}
-      <div style={{ 
-        display: "flex", 
-        alignItems: "center", 
-        gap: "10px",
-        flexGrow: 1,
-        marginTop: "10px",
-        marginLeft: "20px"
-         }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          flexGrow: 1,
+          marginTop: "10px",
+          marginLeft: "20px",
+        }}
+      >
         <TextField
           variant="outlined"
           placeholder="Search city, e.g., 'Toronto'"
@@ -63,10 +70,10 @@ const Navbar = ({ onSearch, toggleUnit, onCurrentLocation, unit }) => {
           value={searchedCity}
           onChange={handleSearchInputChange}
           onKeyDown={handleKeyDown}
-          style={{ 
+          style={{
             width: "100%",
-          maxWidth: "250px"
-         }}
+            maxWidth: "250px",
+          }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -83,32 +90,36 @@ const Navbar = ({ onSearch, toggleUnit, onCurrentLocation, unit }) => {
           variant="contained"
           color="primary"
           onClick={handleSearchSubmit}
-          style={{ 
+          disabled={!searchedCity.trim()} // Disable if input is empty
+          style={{
             borderRadius: "5px",
-             backgroundColor: "#89ABE3FF",
-             marginLeft: "10px",
-             flexShrink: 0
-            }}
+            backgroundColor: searchedCity.trim() ? "#89ABE3FF" : "#bdc3c7",
+            cursor: searchedCity.trim() ? "pointer" : "not-allowed",
+            marginLeft: "10px",
+            flexShrink: 0,
+          }}
         >
           Search
         </Button>
       </div>
 
       {/* Button Group for Unit Toggle and Current Location */}
-      <div 
-      style={{ 
-        display: "flex", 
-        alignItems: "center", 
-        gap: "20px",
-        marginTop: "10px",
-        justifyContent:"flex-end",
-        flexGrow: 1,
-        flexWrap:"wrap" 
-        }}>
-
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "20px",
+          marginTop: "10px",
+          justifyContent: "flex-end",
+          flexGrow: 1,
+          flexWrap: "wrap",
+        }}
+      >
         {/* Temperature Unit Toggle Button */}
         <button
-          onClick={toggleUnit}
+          onClick={() => {
+            toggleUnit();
+          }}
           style={{
             backgroundColor: "#89ABE3FF",
             color: "white",
@@ -118,8 +129,8 @@ const Navbar = ({ onSearch, toggleUnit, onCurrentLocation, unit }) => {
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
-            minWidth:"90px",
-            marginBottom:"10px"
+            minWidth: "90px",
+            marginBottom: "10px",
           }}
         >
           <DeviceThermostatIcon style={{ marginRight: "8px" }} />
@@ -128,7 +139,9 @@ const Navbar = ({ onSearch, toggleUnit, onCurrentLocation, unit }) => {
 
         {/* Current Location Button */}
         <button
-          onClick={onCurrentLocation}
+          onClick={() => {
+            onCurrentLocation();
+          }}
           style={{
             backgroundColor: "#89ABE3FF",
             color: "white",
@@ -138,8 +151,8 @@ const Navbar = ({ onSearch, toggleUnit, onCurrentLocation, unit }) => {
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
-            minWidth:"120px",
-            marginBottom:"10px"
+            minWidth: "120px",
+            marginBottom: "10px",
           }}
         >
           <GpsFixedIcon style={{ marginRight: "8px" }} />
